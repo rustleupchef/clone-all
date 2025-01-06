@@ -1,8 +1,10 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.HashSet;
 
 import org.json.simple.JSONArray;
@@ -42,6 +44,16 @@ public class App {
                     if (ignored.contains(name.split("/")[2])) continue; 
                     String url = String.format("https://github.com%s", name);
                     System.out.println(url);
+                    File output = new File((String) config.get("output"));
+                    output = new File(Paths.get(output.getAbsolutePath()).resolve(name.split("/")[2]).toAbsolutePath().toString());
+                    if (!output.exists()) output.mkdir();
+                    System.out.println(output.getAbsolutePath());
+                    if (output.exists() && output.isDirectory()) {
+                        Process gitClone = new ProcessBuilder("git", "clone", url, output.getAbsolutePath()).start();
+                        gitClone.waitFor();
+                        validPage = true;
+                        continue;
+                    }
                     Process gitClone = new ProcessBuilder("git", "clone", url).start();
                     gitClone.waitFor();
                     validPage = true;
